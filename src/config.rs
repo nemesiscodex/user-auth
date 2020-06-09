@@ -23,7 +23,7 @@ pub struct HashingService {
 }
 
 impl HashingService {
-    #[instrument(skip(password))]
+    #[instrument(skip(self, password))]
     pub async fn hash(&self, password: String) -> Result<String> {
         Hasher::default()
             .with_secret_key(&*self.key)
@@ -34,10 +34,11 @@ impl HashingService {
             .map_err(|err| eyre!("Hashing error: {}", err))
     }
 
-    #[instrument(skip(self, password))]
-    pub async fn verify(&self, password: String) -> Result<bool> {
+    #[instrument(skip(self, password, password_hash))]
+    pub async fn verify(&self, password: &str, password_hash: &str) -> Result<bool> {
         Verifier::default()
             .with_secret_key(&*self.key)
+            .with_hash(password_hash)
             .with_password(password)
             .verify_non_blocking()
             .compat()

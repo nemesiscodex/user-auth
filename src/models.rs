@@ -1,6 +1,7 @@
 use uuid::Uuid;
 use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
+use validator::Validate;
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct User {
@@ -28,9 +29,13 @@ pub struct User {
 //     role: Roles
 // }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct NewUser {
+    #[validate(length(min = 3))]
+    pub username: String,
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 3))]
     pub password: String
 }
 
@@ -41,14 +46,8 @@ pub struct NewUser {
 //     bio: Option<String>
 // }
 
-// #[derive(Deserialize)]
-// struct Login {
-//     email: Option<String>,
-//     username: Option<String>,
-//     password: String
-// }
 
 #[derive(Serialize)]
-struct Auth {
-    token: String
+pub struct Auth {
+    pub token: String
 }
