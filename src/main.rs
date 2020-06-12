@@ -2,26 +2,24 @@
 extern crate validator_derive;
 
 mod config;
+mod db;
+mod errors;
 mod handlers;
 mod models;
-mod db;
 
 use crate::config::Config;
-use tracing::{info, instrument};
-use eyre::Result;
 use actix_web::{App, HttpServer};
+use eyre::Result;
 use handlers::app_config;
-
+use tracing::{info, instrument};
+use actix_web::middleware::Logger;
 
 #[actix_rt::main]
 #[instrument]
 async fn main() -> Result<()> {
+    let config = Config::from_env().expect("Server configuration");
 
-    let config = Config::from_env()
-        .expect("Server configuration");
-
-    let pool = config.db_pool().await
-        .expect("Database configuration");
+    let pool = config.db_pool().await.expect("Database configuration");
 
     let hashing = config.hashing();
 
@@ -29,13 +27,14 @@ async fn main() -> Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .data(pool.clone())
             .data(hashing.clone())
             .configure(app_config)
     })
-        .bind(format!("{}:{}", config.host, config.port))?
-        .run()
-        .await?;
+    .bind(format!("{}:{}", config.host, config.port))?
+    .run()
+    .await?;
 
     Ok(())
 }

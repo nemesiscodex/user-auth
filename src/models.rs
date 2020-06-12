@@ -1,6 +1,6 @@
-use uuid::Uuid;
 use chrono::NaiveDateTime;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use validator::Validate;
 
 #[derive(sqlx::FromRow, Serialize)]
@@ -16,7 +16,7 @@ pub struct User {
     pub email_verified: bool,
     pub active: bool,
     pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime
+    pub updated_at: NaiveDateTime,
 }
 
 // enum Roles {
@@ -36,7 +36,7 @@ pub struct NewUser {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 3))]
-    pub password: String
+    pub password: String,
 }
 
 // #[derive(Deserialize)]
@@ -46,8 +46,7 @@ pub struct NewUser {
 //     bio: Option<String>
 // }
 
-
 #[derive(Serialize)]
 pub struct Auth {
-    pub token: String
+    pub token: String,
 }
