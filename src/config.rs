@@ -1,16 +1,16 @@
+use actix_web::web::block;
 use argonautica::{Hasher, Verifier};
+use chrono::{Duration, Utc};
 use dotenv::dotenv;
 use eyre::{eyre, Result, WrapErr};
 use futures::compat::Future01CompatExt;
-use serde::{Serialize, Deserialize};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
+use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
+use sqlx::types::Uuid;
 use std::sync::Arc;
 use tracing::{info, instrument};
 use tracing_subscriber::EnvFilter;
-use sqlx::types::Uuid;
-use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation, TokenData};
-use chrono::{Utc, Duration};
-use actix_web::web::block;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -24,13 +24,13 @@ pub struct Config {
 #[derive(Debug, Clone)]
 pub struct CryptoService {
     key: Arc<String>,
-    jwt_secret: Arc<String>
+    jwt_secret: Arc<String>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
-    sub: Uuid,
-    exp: i64
+    pub sub: Uuid,
+    exp: i64,
 }
 
 impl CryptoService {
@@ -57,31 +57,34 @@ impl CryptoService {
             .map_err(|err| eyre!("Verifying error: {}", err))
     }
 
+    #[instrument(skip(self))]
     pub async fn generate_jwt(&self, user_id: Uuid) -> Result<String> {
         let jwt_key = self.jwt_secret.clone();
         block(move || {
             let headers = Header::default();
             let encoding_key = EncodingKey::from_secret(jwt_key.as_bytes());
             let now = Utc::now() + Duration::days(1); // Expires in 1 day
-            let claims = Claims { sub: user_id, exp: now.timestamp() };
+            let claims = Claims {
+                sub: user_id,
+                exp: now.timestamp(),
+            };
             encode(&headers, &claims, &encoding_key)
         })
-            .await
-            .map_err(|err| eyre!("Creating jwt token: {}", err))
+        .await
+        .map_err(|err| eyre!("Creating jwt token: {}", err))
     }
 
-    pub async fn verify_jwt(self, token: String) -> Result<TokenData<Claims>> {
-    
+    #[instrument(skip(self, token))]
+    pub async fn verify_jwt(&self, token: String) -> Result<TokenData<Claims>> {
         let jwt_key = self.jwt_secret.clone();
         block(move || {
             let decoding_key = DecodingKey::from_secret(jwt_key.as_bytes());
             let validation = Validation::default();
-            decode::<Claims>(&token, &decoding_key, &validation)
+            decode::<Claims>(&token.clone(), &decoding_key, &validation)
         })
-            .await
-            .map_err(|err| eyre!("Verifying jwt token: {}", err))
+        .await
+        .map_err(|err| eyre!("Verifying jwt token: {}", err))
     }
-
 }
 
 impl Config {
@@ -117,7 +120,7 @@ impl Config {
     pub fn hashing(&self) -> CryptoService {
         CryptoService {
             key: Arc::new(self.secret_key.clone()),
-            jwt_secret: Arc::new(self.jwt_secret.clone())
+            jwt_secret: Arc::new(self.jwt_secret.clone()),
         }
     }
 }

@@ -13,21 +13,13 @@ pub struct User {
     pub full_name: Option<String>,
     pub bio: Option<String>,
     pub image: Option<String>,
+    #[serde(skip_serializing)]
     pub email_verified: bool,
+    #[serde(skip_serializing)]
     pub active: bool,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
-
-// enum Roles {
-//     ADMIN,
-//     USER
-// }
-
-// pub struct UserRoles {
-//     id: Uuid,
-//     role: Roles
-// }
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct NewUser {
@@ -39,12 +31,13 @@ pub struct NewUser {
     pub password: String,
 }
 
-// #[derive(Deserialize)]
-// pub struct UpdateProfile {
-//     id: Uuid,
-//     full_name: Option<String>,
-//     bio: Option<String>
-// }
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateProfile {
+    pub full_name: Option<String>,
+    pub bio: Option<String>,
+    #[validate(url)]
+    pub image: Option<String>,
+}
 
 #[derive(Serialize)]
 pub struct Auth {

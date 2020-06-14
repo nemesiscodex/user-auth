@@ -8,11 +8,11 @@ mod handlers;
 mod models;
 
 use crate::config::Config;
+use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer};
 use eyre::Result;
 use handlers::app_config;
 use tracing::{info, instrument};
-use actix_web::middleware::Logger;
 
 #[actix_rt::main]
 #[instrument]
