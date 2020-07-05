@@ -10,7 +10,7 @@ mod models;
 use crate::config::Config;
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer};
-use eyre::Result;
+use color_eyre::Result;
 use handlers::app_config;
 use tracing::{info, instrument};
 

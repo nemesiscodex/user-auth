@@ -1,18 +1,16 @@
 use crate::{
-    config::CryptoService,
+    config::crypto::CryptoService,
     errors::AppError,
-    models::{NewUser, UpdateProfile, User},
+    models::user::{NewUser, UpdateProfile, User},
 };
 use actix_web::{web::Data, FromRequest};
-use eyre::Result;
+use color_eyre::Result;
 use futures::future::{ready, Ready};
 use sqlx::postgres::PgQueryAs;
 use sqlx::PgPool;
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
 use uuid::Uuid;
-
-pub const UNIQUE_VIOLATION_CODE: &str = "23505";
 
 pub struct UserRepository {
     pool: Arc<PgPool>,

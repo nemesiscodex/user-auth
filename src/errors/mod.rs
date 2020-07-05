@@ -1,9 +1,10 @@
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
-use eyre::{DefaultHandler, Report};
+use color_eyre::Report;
 use serde::export::Formatter;
 use serde::{Serialize, Serializer};
+use std::convert::From;
 use tracing::error;
 
 #[derive(Debug, Serialize)]
@@ -38,6 +39,12 @@ impl AppErrorCode {
     }
 }
 
+impl From<AppErrorCode> for AppError {
+    fn from(error: AppErrorCode) -> Self {
+        error.default()
+    }
+}
+
 impl AppError {
     pub const INTERNAL_ERROR: AppErrorCode = AppErrorCode(1001);
     pub const INVALID_INPUT: AppErrorCode = AppErrorCode(2001);
@@ -55,8 +62,8 @@ impl Serialize for AppErrorCode {
     }
 }
 
-impl std::convert::From<eyre::Report> for AppError {
-    fn from(e: Report<DefaultHandler>) -> Self {
+impl From<Report> for AppError {
+    fn from(e: Report) -> Self {
         error!("{:?}", e);
         Self::INTERNAL_ERROR.message("An unexpected error ocurred.".to_string())
     }

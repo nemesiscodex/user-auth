@@ -38,8 +38,3 @@ pub struct UpdateProfile {
     #[validate(url)]
     pub image: Option<String>,
 }
-
-#[derive(Serialize)]
-pub struct Auth {
-    pub token: String,
-}
