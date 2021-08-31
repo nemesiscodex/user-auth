@@ -62,3 +62,6 @@ cargo run
   ```
   eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzNWRiYTBjNC1iYTE5LTQ5MTYtYTY1OC0xZTE4NWQwNGYwODYiLCJleHAiOjE1OTI3NzI1MzR9.sNXEEIE68CZ-IAjnTCqc2RvgBrRuwMJ5Kve6KJClXNM
   ```
+  
+  ### Note for development on M1 Mac
+  If you are developing on an M1 Mac, you will be unable to compile `argonautica` with the `simd` feature. Remove the feature in `Cargo.toml`.
