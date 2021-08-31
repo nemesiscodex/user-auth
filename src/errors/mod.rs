@@ -2,7 +2,7 @@ use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
 use color_eyre::Report;
-use serde::export::Formatter;
+use core::fmt::Formatter;
 use serde::{Serialize, Serializer};
 use std::convert::From;
 use tracing::error;
